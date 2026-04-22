@@ -4,9 +4,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucaCappelletti94/client-uploader-traits/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](https://www.rust-lang.org)
 
-Traits for repository uploader clients such as `zenodo-rs`, `internetarchive-rs`, and `figshare-rs`.
-
-This crate gives those clients a common generic surface without pretending their APIs or storage models are identical.
+Traits defining a common generic traits surface for uploader clients such as `zenodo-rs`, `internetarchive-rs`, and `figshare-rs`.
 
 It covers:
 
