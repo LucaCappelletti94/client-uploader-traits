@@ -1,2 +1,37 @@
 # client-uploader-traits
-Traits library for client uploaders
+
+[![CI](https://github.com/LucaCappelletti94/client-uploader-traits/actions/workflows/ci.yml/badge.svg)](https://github.com/LucaCappelletti94/client-uploader-traits/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucaCappelletti94/client-uploader-traits/blob/main/LICENSE)
+[![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](https://www.rust-lang.org)
+
+Traits for repository uploader clients such as `zenodo-rs`, `internetarchive-rs`, and `figshare-rs`.
+
+This crate gives those clients a common generic surface without pretending their APIs or storage models are identical.
+
+It covers:
+
+- client configuration
+- upload, file, and resource inspection
+- public lookup, search, and download capabilities
+- create/update publication workflows
+- publication outcome and search-result inspection
+- small generic helpers and a `prelude`
+
+```rust
+use client_uploader_traits::{
+    CreatePublication, CreatePublicationRequest, PublicationOutcome,
+};
+
+async fn publish<C>(
+    client: &C,
+    request: CreatePublicationRequest<C::CreateTarget, C::Metadata, C::Upload>,
+) -> Result<C::Output, C::Error>
+where
+    C: CreatePublication,
+    C::Output: PublicationOutcome,
+{
+    client.create_publication(request).await
+}
+```
+
+This crate is intentionally self-contained. Real conformance tests against concrete client crates should live in those crates.
