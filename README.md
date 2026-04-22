@@ -1,6 +1,8 @@
 # client-uploader-traits
 
 [![CI](https://github.com/LucaCappelletti94/client-uploader-traits/actions/workflows/ci.yml/badge.svg)](https://github.com/LucaCappelletti94/client-uploader-traits/actions/workflows/ci.yml)
+[![crates.io](https://img.shields.io/crates/v/client-uploader-traits.svg)](https://crates.io/crates/client-uploader-traits)
+[![docs.rs](https://img.shields.io/docsrs/client-uploader-traits)](https://docs.rs/client-uploader-traits)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/LucaCappelletti94/client-uploader-traits/blob/main/LICENSE)
 [![Rust](https://img.shields.io/badge/rust-1.86%2B-orange.svg)](https://www.rust-lang.org)
 
