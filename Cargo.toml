@@ -1,0 +1,17 @@
+[package]
+name = "client-uploader-traits"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.86"
+description = "Common traits for repository uploader clients such as zenodo-rs, internetarchive-rs, and figshare-rs."
+license = "MIT"
+repository = "https://github.com/LucaCappelletti94/client-uploader-traits"
+readme = "README.md"
+keywords = ["traits", "uploads", "publishing", "repositories"]
+categories = ["api-bindings"]
+
+[package.metadata.docs.rs]
+all-features = true
+
+[dependencies]
+url = "2.5"
