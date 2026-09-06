@@ -1,3 +1,4 @@
+use std::future::{ready, Future};
 use std::path::Path;
 use std::time::Duration;
 
@@ -239,11 +240,11 @@ impl ReadPublicResource for DummyClient {
     type ResourceId = u64;
     type Resource = DummyRecord;
 
-    async fn get_public_resource(
+    fn get_public_resource(
         &self,
         id: &Self::ResourceId,
-    ) -> Result<Self::Resource, Self::Error> {
-        Ok(dummy_record(*id))
+    ) -> impl Future<Output = Result<Self::Resource, Self::Error>> {
+        ready(Ok(dummy_record(*id)))
     }
 }
 
@@ -251,14 +252,14 @@ impl SearchPublicResources for DummyClient {
     type Query = &'static str;
     type SearchResults = DummySearchResults;
 
-    async fn search_public_resources(
+    fn search_public_resources(
         &self,
         query: &Self::Query,
-    ) -> Result<Self::SearchResults, Self::Error> {
-        Ok(DummySearchResults {
+    ) -> impl Future<Output = Result<Self::SearchResults, Self::Error>> {
+        ready(Ok(DummySearchResults {
             items: vec![dummy_record(query.len() as u64)],
             total_hits: Some(1),
-        })
+        }))
     }
 }
 
@@ -266,11 +267,11 @@ impl ListResourceFiles for DummyClient {
     type ResourceId = u64;
     type File = DummyFile;
 
-    async fn list_resource_files(
+    fn list_resource_files(
         &self,
         id: &Self::ResourceId,
-    ) -> Result<Vec<Self::File>, Self::Error> {
-        Ok(dummy_record(*id).files)
+    ) -> impl Future<Output = Result<Vec<Self::File>, Self::Error>> {
+        ready(Ok(dummy_record(*id).files))
     }
 }
 
@@ -278,13 +279,16 @@ impl DownloadNamedPublicFile for DummyClient {
     type ResourceId = u64;
     type Download = String;
 
-    async fn download_named_public_file_to_path(
+    fn download_named_public_file_to_path(
         &self,
         id: &Self::ResourceId,
         name: &str,
         path: &Path,
-    ) -> Result<Self::Download, Self::Error> {
-        Ok(format!("downloaded {name} from {id} to {}", path.display()))
+    ) -> impl Future<Output = Result<Self::Download, Self::Error>> {
+        ready(Ok(format!(
+            "downloaded {name} from {id} to {}",
+            path.display()
+        )))
     }
 }
 
@@ -294,11 +298,11 @@ impl CreatePublication for DummyClient {
     type Upload = DummyUpload;
     type Output = DummyPublicationOutcome;
 
-    async fn create_publication(
+    fn create_publication(
         &self,
         request: CreatePublicationRequest<Self::CreateTarget, Self::Metadata, Self::Upload>,
-    ) -> Result<Self::Output, Self::Error> {
-        Ok(DummyPublicationOutcome {
+    ) -> impl Future<Output = Result<Self::Output, Self::Error>> {
+        ready(Ok(DummyPublicationOutcome {
             public_resource: DummyRecord {
                 id: request.uploads.len() as u64,
                 title: request.metadata,
@@ -311,7 +315,7 @@ impl CreatePublication for DummyClient {
             },
             mutable_resource: Some(dummy_draft(1, false, true)),
             created: Some(true),
-        })
+        }))
     }
 }
 
@@ -322,7 +326,7 @@ impl UpdatePublication for DummyClient {
     type Upload = DummyUpload;
     type Output = DummyPublicationOutcome;
 
-    async fn update_publication(
+    fn update_publication(
         &self,
         request: UpdatePublicationRequest<
             Self::ResourceId,
@@ -330,9 +334,9 @@ impl UpdatePublication for DummyClient {
             Self::FilePolicy,
             Self::Upload,
         >,
-    ) -> Result<Self::Output, Self::Error> {
+    ) -> impl Future<Output = Result<Self::Output, Self::Error>> {
         let _ = request.policy.kind();
-        Ok(DummyPublicationOutcome {
+        ready(Ok(DummyPublicationOutcome {
             public_resource: DummyRecord {
                 id: request.resource_id,
                 title: request.metadata,
@@ -345,7 +349,7 @@ impl UpdatePublication for DummyClient {
             },
             mutable_resource: None,
             created: Some(false),
-        })
+        }))
     }
 }
 
@@ -353,16 +357,16 @@ impl LookupByDoi for DummyClient {
     type Doi = &'static str;
     type Resource = DummyRecord;
 
-    async fn get_public_resource_by_doi(
+    fn get_public_resource_by_doi(
         &self,
         doi: &Self::Doi,
-    ) -> Result<Self::Resource, Self::Error> {
-        Ok(DummyRecord {
+    ) -> impl Future<Output = Result<Self::Resource, Self::Error>> {
+        ready(Ok(DummyRecord {
             id: doi.len() as u64,
             title: "by-doi",
             doi: Some(*doi),
             files: vec![],
-        })
+        }))
     }
 }
 
@@ -370,11 +374,11 @@ impl ResolveLatestPublicResource for DummyClient {
     type ResourceId = u64;
     type Resource = DummyRecord;
 
-    async fn resolve_latest_public_resource(
+    fn resolve_latest_public_resource(
         &self,
         id: &Self::ResourceId,
-    ) -> Result<Self::Resource, Self::Error> {
-        Ok(dummy_record(*id + 1))
+    ) -> impl Future<Output = Result<Self::Resource, Self::Error>> {
+        ready(Ok(dummy_record(*id + 1)))
     }
 }
 
@@ -382,16 +386,16 @@ impl ResolveLatestPublicResourceByDoi for DummyClient {
     type Doi = &'static str;
     type Resource = DummyRecord;
 
-    async fn resolve_latest_public_resource_by_doi(
+    fn resolve_latest_public_resource_by_doi(
         &self,
         doi: &Self::Doi,
-    ) -> Result<Self::Resource, Self::Error> {
-        Ok(DummyRecord {
+    ) -> impl Future<Output = Result<Self::Resource, Self::Error>> {
+        ready(Ok(DummyRecord {
             id: doi.len() as u64 + 1,
             title: "latest-by-doi",
             doi: Some(*doi),
             files: vec![],
-        })
+        }))
     }
 }
 
@@ -403,27 +407,30 @@ impl DraftWorkflow for DummyClient {
     type UploadResult = DummyFile;
     type Published = DummyDraft;
 
-    async fn create_draft(&self, _metadata: &Self::Metadata) -> Result<Self::Draft, Self::Error> {
-        Ok(dummy_draft(1, false, true))
+    fn create_draft(
+        &self,
+        _metadata: &Self::Metadata,
+    ) -> impl Future<Output = Result<Self::Draft, Self::Error>> {
+        ready(Ok(dummy_draft(1, false, true)))
     }
 
-    async fn update_draft_metadata(
+    fn update_draft_metadata(
         &self,
         draft_id: &<Self::Draft as DraftResource>::Id,
         _metadata: &Self::Metadata,
-    ) -> Result<Self::Draft, Self::Error> {
-        Ok(dummy_draft(*draft_id, false, true))
+    ) -> impl Future<Output = Result<Self::Draft, Self::Error>> {
+        ready(Ok(dummy_draft(*draft_id, false, true)))
     }
 
-    async fn reconcile_draft_files(
+    fn reconcile_draft_files(
         &self,
         draft: &Self::Draft,
         policy: Self::FilePolicy,
         uploads: Vec<Self::Upload>,
-    ) -> Result<Vec<Self::UploadResult>, Self::Error> {
+    ) -> impl Future<Output = Result<Vec<Self::UploadResult>, Self::Error>> {
         let _ = draft.id;
         let _ = policy.kind();
-        Ok(uploads
+        ready(Ok(uploads
             .into_iter()
             .enumerate()
             .map(|(index, upload)| DummyFile {
@@ -435,14 +442,14 @@ impl DraftWorkflow for DummyClient {
                 },
                 size: 1,
             })
-            .collect())
+            .collect()))
     }
 
-    async fn publish_draft(
+    fn publish_draft(
         &self,
         draft_id: &<Self::Draft as DraftResource>::Id,
-    ) -> Result<Self::Published, Self::Error> {
-        Ok(dummy_draft(*draft_id, true, false))
+    ) -> impl Future<Output = Result<Self::Published, Self::Error>> {
+        ready(Ok(dummy_draft(*draft_id, true, false)))
     }
 }
 
